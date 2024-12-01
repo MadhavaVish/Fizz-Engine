@@ -21,30 +21,19 @@ add_library(
     "${ENGINE_INCLUDE_DIR}/application/window.hpp"
     "${ENGINE_SOURCE_DIR}/application/window.cpp"
 )
-# set(SDL2_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/external/sdl2/include)
-# set(SDL2_LIB_DIR ${CMAKE_SOURCE_DIR}/external/sdl2/lib/x64)
-
-# include_directories(${SDL2_INCLUDE_DIR})
-# target_link_directories(
-#     FizzEngine
-#     PRIVATE ${SDL2_LIB_DIR})
 
 target_include_directories(
     FizzEngine
     PRIVATE ${ENGINE_INCLUDE_DIR}
     PUBLIC ${Vulkan_INCLUDE_DIR}
-    # PRIVATE ${SDL2_INCLUDE_DIR}
 )
-# list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/external/sdl2/cmake")
-# find_package(SDL2 CONFIG REQUIRED)
-# find_package(spdlog)
 
 target_link_libraries(
     FizzEngine 
     PUBLIC volk
     PUBLIC SDL2::SDL2 
     PUBLIC spdlog::spdlog
-    PRIVATE vk-bootstrap::vk-bootstrap)
-
+    PRIVATE vk-bootstrap::vk-bootstrap
+)
 
 target_compile_definitions(FizzEngine PRIVATE FIZZENGINE_EXPORTS)
