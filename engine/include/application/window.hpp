@@ -1,10 +1,10 @@
 #pragma once
 
-#include <SDL.h>
 #include <string>
 
 #include <foundation/platform.hpp>
 
+class SDL_Window;
 namespace fizzengine
 {
     struct WindowDims
@@ -12,6 +12,7 @@ namespace fizzengine
         u32 width;
         u32 height;
     };
+
     class FIZZENGINE_API Window
     {
     public:

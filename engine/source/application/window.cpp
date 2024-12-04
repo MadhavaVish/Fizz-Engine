@@ -1,5 +1,6 @@
 #include "application/window.hpp"
 
+#include <SDL.h>
 #include <spdlog/spdlog.h>
 
 namespace fizzengine

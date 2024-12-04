@@ -34,8 +34,8 @@ target_include_directories(
 target_link_libraries(
     FizzEngine 
     PUBLIC volk
-    PUBLIC SDL2::SDL2 
     PUBLIC spdlog::spdlog
+    PRIVATE SDL2::SDL2 
     PRIVATE vk-bootstrap::vk-bootstrap
 )
 
