@@ -19,8 +19,7 @@ namespace fizzengine
 		bool is_initialized{false};
 
 		Window m_window{"Fizz Engine", 1280, 720};
-		GPUDevice m_device;
+		GPUDevice m_gpu;
 		Renderer m_renderer;
-		u32 m_frame_number{0};
 	};
 }

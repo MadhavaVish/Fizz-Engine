@@ -17,6 +17,9 @@ add_library(
 
     "${ENGINE_INCLUDE_DIR}/renderer/vk_initializers.hpp"
     "${ENGINE_SOURCE_DIR}/renderer/vk_initializers.cpp"
+
+    "${ENGINE_INCLUDE_DIR}/renderer/vk_utils.hpp"
+    "${ENGINE_SOURCE_DIR}/renderer/vk_utils.cpp"
     
     "${ENGINE_INCLUDE_DIR}/application/window.hpp"
     "${ENGINE_SOURCE_DIR}/application/window.cpp"
