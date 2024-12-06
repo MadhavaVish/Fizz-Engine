@@ -4,6 +4,10 @@
 
 #include <VkBootstrap.h>
 #include <SDL_vulkan.h>
+
+#define VMA_IMPLEMENTATION
+#include <vma/vk_mem_alloc.h>
+
 #include <renderer/device.hpp>
 #include <renderer/vk_initializers.hpp>
 
@@ -34,10 +38,46 @@ namespace fizzengine
         m_graphics_queue = vkb_device.get_queue(vkb::QueueType::graphics).value();
         m_graphics_queue_family = vkb_device.get_queue_index(vkb::QueueType::graphics).value();
 
+        VmaVulkanFunctions vma_vulkan_func{};
+        vma_vulkan_func.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
+        vma_vulkan_func.vkGetDeviceProcAddr = vkGetDeviceProcAddr;
+        vma_vulkan_func.vkAllocateMemory = vkAllocateMemory;
+        vma_vulkan_func.vkBindBufferMemory = vkBindBufferMemory;
+        vma_vulkan_func.vkBindImageMemory = vkBindImageMemory;
+        vma_vulkan_func.vkCreateBuffer = vkCreateBuffer;
+        vma_vulkan_func.vkCreateImage = vkCreateImage;
+        vma_vulkan_func.vkDestroyBuffer = vkDestroyBuffer;
+        vma_vulkan_func.vkDestroyImage = vkDestroyImage;
+        vma_vulkan_func.vkFlushMappedMemoryRanges = vkFlushMappedMemoryRanges;
+        vma_vulkan_func.vkFreeMemory = vkFreeMemory;
+        vma_vulkan_func.vkGetBufferMemoryRequirements = vkGetBufferMemoryRequirements;
+        vma_vulkan_func.vkGetImageMemoryRequirements = vkGetImageMemoryRequirements;
+        vma_vulkan_func.vkGetPhysicalDeviceMemoryProperties = vkGetPhysicalDeviceMemoryProperties;
+        vma_vulkan_func.vkGetPhysicalDeviceProperties = vkGetPhysicalDeviceProperties;
+        vma_vulkan_func.vkInvalidateMappedMemoryRanges = vkInvalidateMappedMemoryRanges;
+        vma_vulkan_func.vkMapMemory = vkMapMemory;
+        vma_vulkan_func.vkUnmapMemory = vkUnmapMemory;
+        vma_vulkan_func.vkCmdCopyBuffer = vkCmdCopyBuffer;
+
+        VmaAllocatorCreateInfo allocator_info = {};
+        allocator_info.physicalDevice = m_chosen_GPU;
+        allocator_info.device = m_device;
+        allocator_info.instance = m_instance;
+        allocator_info.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
+        allocator_info.pVulkanFunctions = &vma_vulkan_func;
+
+        vmaCreateAllocator(&allocator_info, &m_vma_allocator);
+
+        m_main_deletion_queue.push_function([&]()
+                                            { vmaDestroyAllocator(m_vma_allocator); });
+
         auto [width, height] = window.get_dimensions();
         create_swapchain(width, height);
+        create_draw_target(width, height);
+
         init_commands();
         init_sync_structures();
+
         spdlog::info("Vulkan instance created");
     }
 
@@ -50,7 +90,11 @@ namespace fizzengine
             vkDestroyFence(m_device, m_command_buffer_executed_fence[i], nullptr);
             vkDestroySemaphore(m_device, m_render_complete_semaphore[i], nullptr);
             vkDestroySemaphore(m_device, m_image_acquired_semaphore[i], nullptr);
+
+            m_frames[i].m_deletion_queue.flush();
         }
+
+        m_main_deletion_queue.flush();
 
         destroy_swapchain();
         vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
@@ -96,13 +140,54 @@ namespace fizzengine
         // Get the VkDevice handle used in the rest of a vulkan application
         m_device = vkb_device.device;
         volkLoadDevice(m_device);
-        m_chosenGPU = vkb_physical_device.physical_device;
+        m_chosen_GPU = vkb_physical_device.physical_device;
         return vkb_device;
+    }
+    void GPUDevice::create_draw_target(u32 width, u32 height)
+    {
+        VkExtent3D drawImageExtent = {
+            width,
+            height,
+            1};
+
+        // hardcoding the draw format to 32 bit float
+        m_draw_image.m_format = VK_FORMAT_R16G16B16A16_SFLOAT;
+        m_draw_image.width = width;
+        m_draw_image.height = height;
+
+        VkImageUsageFlags draw_image_usage{};
+        draw_image_usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+        draw_image_usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+        draw_image_usage |= VK_IMAGE_USAGE_STORAGE_BIT;
+        draw_image_usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+        VkImageCreateInfo rimg_info = vkinit::image_create_info(m_draw_image.m_format, draw_image_usage, VkExtent3D{.width = width, .height = height, .depth = 1});
+
+        // for the draw image, we want to allocate it from gpu local memory
+        VmaAllocationCreateInfo rimg_allocinfo = {};
+        rimg_allocinfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+        rimg_allocinfo.requiredFlags = VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+        // allocate and create the image
+        vmaCreateImage(m_vma_allocator, &rimg_info, &rimg_allocinfo, &m_draw_image.m_image, &m_draw_image.m_vma_allocation, nullptr);
+
+        // build a image-view for the draw image to use for rendering
+        VkImageViewCreateInfo rview_info = vkinit::imageview_create_info(m_draw_image.m_format, m_draw_image.m_image, VK_IMAGE_ASPECT_COLOR_BIT);
+
+        VK_CHECK(vkCreateImageView(m_device, &rview_info, nullptr, &m_draw_image.m_image_view));
+
+        // add to deletion queues
+        m_main_deletion_queue.push_function(
+            [=]()
+            {
+                vkDestroyImageView(m_device, m_draw_image.m_image_view, nullptr);
+                vmaDestroyImage(m_vma_allocator, m_draw_image.m_image, m_draw_image.m_vma_allocation);
+            });
     }
 
     void GPUDevice::create_swapchain(u32 width, u32 height)
     {
-        vkb::SwapchainBuilder swapchainBuilder{m_chosenGPU, m_device, m_surface};
+        vkb::SwapchainBuilder swapchainBuilder{m_chosen_GPU, m_device, m_surface};
 
         m_swapchain_image_format = VK_FORMAT_B8G8R8A8_UNORM;
 
@@ -174,6 +259,7 @@ namespace fizzengine
         {
             VK_CHECK(vkWaitForFences(m_device, 1, render_complete_fence, VK_TRUE, UINT64_MAX));
         }
+        get_current_frame().m_deletion_queue.flush();
 
         VK_CHECK(vkResetFences(m_device, 1, render_complete_fence));
 
@@ -185,6 +271,9 @@ namespace fizzengine
         // }
 
         // Command pool reset
+
+        m_draw_extent.width = m_draw_image.width;
+        m_draw_extent.height = m_draw_image.height;
         VkCommandBuffer cmd = get_current_frame().m_main_command_buffer;
         VK_CHECK(vkResetCommandBuffer(cmd, 0));
 

@@ -15,6 +15,9 @@ add_library(
     "${ENGINE_INCLUDE_DIR}/renderer/device.hpp"
     "${ENGINE_SOURCE_DIR}/renderer/device.cpp"
 
+    "${ENGINE_INCLUDE_DIR}/renderer/gpu_resources.hpp"
+    "${ENGINE_SOURCE_DIR}/renderer/gpu_resources.cpp"
+
     "${ENGINE_INCLUDE_DIR}/renderer/vk_initializers.hpp"
     "${ENGINE_SOURCE_DIR}/renderer/vk_initializers.cpp"
 

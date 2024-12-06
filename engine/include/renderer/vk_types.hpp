@@ -15,6 +15,8 @@
 
 #include <spdlog/spdlog.h>
 
+#include <foundation/platform.hpp>
+
 #define VK_CHECK(x)                                                           \
     do                                                                        \
     {                                                                         \
