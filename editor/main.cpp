@@ -1,15 +1,17 @@
 #define SDL_MAIN_HANDLED
 
-#include <foundation/platform.hpp>
-#include <engine.hpp>
 #include "editor.hpp"
+#include <engine.hpp>
+#include <foundation/platform.hpp>
+#include <iostream>
+#include <spdlog/spdlog.h>
+#include <vector>
 
-int main(int argc, char *argv[])
-{
-	fizzeditor::FizzEditor editor;
-	editor.init();
-	editor.run();
-	editor.shutdown();
 
-	return 0;
+int main(int argc, char* argv[]) {
+    fizzeditor::FizzEditor editor;
+    editor.init();
+    editor.run();
+    editor.shutdown();
+    return 0;
 }

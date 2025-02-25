@@ -2,25 +2,24 @@
 
 #include <string>
 
-#include <foundation/platform.hpp>
 #include <application/window.hpp>
 #include <engine.hpp>
+#include <foundation/platform.hpp>
 
-namespace fizzeditor
-{
+namespace fizzeditor {
 
-	class FizzEditor
-	{
-	public:
-		FizzEditor();
-		~FizzEditor() {};
+class FizzEditor {
+  public:
+    FizzEditor();
+    ~FizzEditor() {};
 
-		void init();
-		void shutdown();
-		void run();
+    void init();
+    void shutdown();
+    void run();
 
-	private:
-		std::string m_app_name;
-		fizzengine::FizzEngine m_engine;
-	};
-}
+  private:
+    std::string            m_app_name;
+    fizzengine::FizzEngine m_engine;
+};
+
+} // namespace fizzeditor
