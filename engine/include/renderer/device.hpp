@@ -42,7 +42,7 @@ struct FrameData {
 };
 
 struct GPUDevice {
-    bool                     m_use_validation_layers;
+    bool                     m_use_validation_layers{true};
     VkInstance               m_instance;
     VkDebugUtilsMessengerEXT m_debug_messenger;
     VkPhysicalDevice         m_chosen_GPU;

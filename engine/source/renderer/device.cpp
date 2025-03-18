@@ -123,9 +123,6 @@ vkb::Device GPUDevice::select_device(vkb::Instance vkb_inst) {
     features12.descriptorBindingPartiallyBound = true;
     features12.runtimeDescriptorArray          = true;
 
-    // use vkbootstrap to select a gpu.
-    // We want a gpu that can write to the SDL surface and supports vulkan 1.3 with the correct
-    // features
     vkb::PhysicalDeviceSelector selector{vkb_inst};
     vkb::PhysicalDevice         vkb_physical_device = selector.set_minimum_version(1, 3)
                                                   .set_required_features_13(features)
@@ -134,12 +131,14 @@ vkb::Device GPUDevice::select_device(vkb::Instance vkb_inst) {
                                                   .select()
                                                   .value();
 
+    // Already available in 1.3 but imgui needs it because it needs the extension version to make
+    // the multiple viewports work
+    vkb_physical_device.enable_extension_if_present("VK_KHR_dynamic_rendering");
     vkb::DeviceBuilder device_builder{vkb_physical_device};
 
     vkb::Device        vkb_device = device_builder.build().value();
 
-    // Get the VkDevice handle used in the rest of a vulkan application
-    m_device = vkb_device.device;
+    m_device                      = vkb_device.device;
     volkLoadDevice(m_device);
 
     m_chosen_GPU = vkb_physical_device.physical_device;

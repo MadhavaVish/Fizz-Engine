@@ -2,7 +2,6 @@
 
 #include <SDL.h>
 #include <backends/imgui_impl_sdl2.h>
-#include <spdlog/spdlog.h>
 
 namespace fizzengine {
 

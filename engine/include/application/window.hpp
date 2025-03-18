@@ -12,7 +12,7 @@ struct WindowDims {
     u32 height;
 };
 
-class FIZZENGINE_API Window {
+class Window {
   public:
     Window(const std::string& title, i32 width, i32 height);
 

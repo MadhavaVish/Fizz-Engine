@@ -10,6 +10,9 @@
 #define FIZZENGINE_API __declspec(dllimport)
 #endif
 
+#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_OFF
+#include <spdlog/spdlog.h>
+
 // Native types typedefs /////////////////////////////////////////////////
 typedef uint8_t     u8;
 typedef uint16_t    u16;

@@ -8,7 +8,7 @@ AllowShortFunctionsOnASingleLine: false
 BreakTemplateDeclarations: true
 
 DerivePointerAlignment: false
-
+SortIncludes: false
 PointerAlignment: Left
 
 AlignConsecutiveDeclarations:

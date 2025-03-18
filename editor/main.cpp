@@ -2,11 +2,6 @@
 
 #include "editor.hpp"
 #include <engine.hpp>
-#include <foundation/platform.hpp>
-#include <iostream>
-#include <spdlog/spdlog.h>
-#include <vector>
-
 
 int main(int argc, char* argv[]) {
     fizzeditor::FizzEditor editor;

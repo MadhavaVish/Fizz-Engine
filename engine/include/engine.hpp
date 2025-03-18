@@ -7,7 +7,7 @@
 
 namespace fizzengine {
 
-class FIZZENGINE_API FizzEngine {
+class FizzEngine {
   public:
     void            init();
     void            shutdown();
